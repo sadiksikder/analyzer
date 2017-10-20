@@ -1,3 +1,14 @@
+/*
+ * header.h
+ * author: Samsuddin Sikder
+ * email: sadiksikder@gmail.com
+ * www.zafaco.de
+ * site documentation: http://blog.fourthbit.com/2014/12/23/traffic-analysis-of-an-ssl-slash-tls-session
+ *
+ */
+
+
+
 /* This function accepts a socket FD and a ptr to the null terminated
  * string to send.  The function will make sure all the bytes of the
  * string are sent.  Returns 1 on success and 0 on failure.

@@ -7,11 +7,6 @@
  *
  */
 
-
-
-
-
-
 #ifndef COMPARISION_H
 #define COMPARISION_H
 
@@ -19,14 +14,6 @@
 #include <pcap.h>
 
 
-/*
- * TLS parsing
- * author: Samsuddin Sikder
- * email: sadiksikder@gmail.com
- * www.zafaco.de
- * site documentation: http://blog.fourthbit.com/2014/12/23/traffic-analysis-of-an-ssl-slash-tls-session
- *
- */
 
 // dumps raw memory in hex byte and printable split format
 void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
