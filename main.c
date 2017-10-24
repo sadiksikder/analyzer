@@ -45,19 +45,27 @@ int main(int argc, char** argv) {
         printf("USAGE: ./SNIFFER <INTERFACE>\n");
         exit(1);
 
-}
+    }
+    int file_status = remove("/home/ssikder/qt/analyzer/credent.txt");
 
+    if( file_status == 0 )
+        printf("%s file deleted successfully.\n");
+    else
+    {
+        printf("Unable to delete the file\n");
+        perror("Error");
+    }
     device = pcap_lookupdev(errbuf);
     if(device == NULL)
         pcap_fatal("pcap_lookupdev", errbuf);
 
     printf("Sniffing on device %s\n", device);
 
-    pcap_handle = pcap_open_live(argv[1], 1024, 1, 0, errbuf);
+    pcap_handle = pcap_open_live(argv[1], 4098, 1, 0, errbuf);
     //pcap_handle = pcap_dump_file("/home/ssikder/Desktop/pcap.pcap");
     if(pcap_handle == NULL) pcap_fatal("pcap_open_live", errbuf);
     //====================================================================
-   // pcap_lookupnet(device,&netaddr, &mask, errbuf);
+    // pcap_lookupnet(device,&netaddr, &mask, errbuf);
     pcap_compile(pcap_handle, &filter,"(tcp[13]==0x10 )or (tcp[13]==0x18 )",1,mask);
     pcap_setfilter(pcap_handle, &filter);
     //====================================================================
@@ -90,6 +98,7 @@ void caught_packet(u_char *user_args, const struct pcap_pkthdr *cap_header, cons
 
     } else
         printf("\t\t\tNo Packet Data\n");
+    //printf("%02x ", client[32]);
 }
 
 void pcap_fatal(const char *failed_in, const char *errbuf) {
