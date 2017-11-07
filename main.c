@@ -14,12 +14,12 @@
 #include "hex.h"
 #include "header.h"
 #include <string.h>
-#include<stdlib.h>
+#include <stdlib.h>
 
 #include "tlsparser.h"
 //#include<netinet/tcp.h>
 //#include "compare.h"
-
+int flag;
 
 void pcap_fatal(const char *, const char *);
 void decode_ethernet(const u_char *);
@@ -32,6 +32,7 @@ void caught_packet(u_char *, const struct pcap_pkthdr *, const u_char *);
 
 int main(int argc, char** argv) {
 
+    int counter=0;
     bpf_u_int32 netaddr=0; bpf_u_int32 mask=0;
     struct pcap_pkthdr cap_header;
     const u_char *packet, *pkt_data;
@@ -40,13 +41,14 @@ int main(int argc, char** argv) {
     pcap_t *pcap_handle;
     int mode = 0;
     long int opt;
+   flag= 0;
 
     if(argc !=2){
         printf("USAGE: ./SNIFFER <INTERFACE>\n");
         exit(1);
 
     }
-    int file_status = remove("/home/ssikder/qt/analyzer/credent.txt");
+    int file_status = remove("/home/ssikder/qt/analyzer/branch1.0/analyzer/credentials.txt");
 
     if( file_status == 0 )
         printf("%s file deleted successfully.\n");
@@ -55,6 +57,7 @@ int main(int argc, char** argv) {
         printf("Unable to delete the file\n");
         perror("Error");
     }
+
     device = pcap_lookupdev(errbuf);
     if(device == NULL)
         pcap_fatal("pcap_lookupdev", errbuf);
@@ -69,17 +72,20 @@ int main(int argc, char** argv) {
     pcap_compile(pcap_handle, &filter,"(tcp[13]==0x10 )or (tcp[13]==0x18 )",1,mask);
     pcap_setfilter(pcap_handle, &filter);
     //====================================================================
-    pcap_loop(pcap_handle, -1, caught_packet, NULL);
 
+    pcap_loop(pcap_handle, -1, caught_packet, (u_char *) &counter);
 
     pcap_close(pcap_handle);
 }
 
 void caught_packet(u_char *user_args, const struct pcap_pkthdr *cap_header, const u_char *packet) {
+    int i=0, *counter =(int *)user_args;
 
     int tcp_header_length, total_header_size, pkt_data_len;
     u_char *pkt_data;
+    FILE *file1; FILE *file2;
 
+    printf("\nPacket Count: %d\n", ++(*counter));
     printf("==== Got a %d byte packet ====\n", cap_header->len);
 
 
@@ -92,14 +98,25 @@ void caught_packet(u_char *user_args, const struct pcap_pkthdr *cap_header, cons
     pkt_data_len = cap_header->len - total_header_size;
     if(pkt_data_len > 0) {
         printf("\t\t\t%u bytes of packet data\n", pkt_data_len);
-        dump(pkt_data, pkt_data_len);
-        tlsparser(pkt_data,pkt_data_len);
 
+        dump(pkt_data, pkt_data_len);
+
+        tlsparser(user_args, pkt_data,pkt_data_len);
+        decryptcomparator();
+        decryptcomparator_server();
+
+//        if(flag == 0)
+//        {
+//            decryptcomparator(file1,file2);
+//            flag = 1;
+//         }
 
     } else
         printf("\t\t\tNo Packet Data\n");
     //printf("%02x ", client[32]);
+    //start++;
 }
+
 
 void pcap_fatal(const char *failed_in, const char *errbuf) {
     printf("Fatal Error in %s: %s\n", failed_in, errbuf);
@@ -118,7 +135,7 @@ void decode_ethernet(const u_char *header_start) {
 
     printf("\tDest: %02x", ethernet_header->ether_dest_addr[0]);
     for(i=1; i < ETHER_ADDR_LEN; i++)
-        printf(":%02x", ethernet_header->ether_dest_addr[i]);
+    printf(":%02x", ethernet_header->ether_dest_addr[i]);
     printf("\tType: %hu ]\n", ethernet_header->ether_type);
 }
 

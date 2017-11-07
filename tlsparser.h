@@ -13,11 +13,12 @@
 
 #endif // COMPARISION_H
 #include <pcap.h>
+#include <stdlib.h>
 
 
 
 // dumps raw memory in hex byte and printable split format
-void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
+void tlsparser(u_char *user_args, const unsigned char *data_buffer, const unsigned int length) {
     unsigned char *data, byte, s;
     int i, j, c, k;
     int tcp_header_length, total_header_size, pkt_data_len;
@@ -28,11 +29,12 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
     unsigned char client[32], server[32], buffer[length];
 
 
-
     for(i=0; i < length; i++) {
         byte = data_buffer[i];
-        FILE *file=fopen("/home/ssikder/qt/analyzer/credent.txt","a");
-        if (file == NULL)
+
+        FILE *file=fopen("/home/ssikder/qt/analyzer/branch1.0/analyzer/credentials.txt","a");
+        FILE *file1=fopen("/home/ssikder/qt/analyzer/branch1.0/analyzer/credentialsserver.txt","a");
+        if (file == NULL && file1 ==NULL)
         {
             printf("Error opening file!\n");
             exit(1);
@@ -59,11 +61,15 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
             printf("length: %4d \n",data_buffer[i+8]);
             //fprintf(file,"\nlength: %4d", data_buffer[i+8]);
             printf("Random(32-bytes): ");
-            fprintf(file,"\nClient_Random ");
+            fprintf(file,  "\nClient_Random ");
+            fprintf(file1,  "\nClient_Random ");
+            //fprintf(file1,"\nClient_Random ");
             for(c=11;c<43;c++){
                 client[32]=data_buffer[i+c];
                 printf("%02x", client[32]);
                 fprintf(file,"%02x", client[32]);
+                fprintf(file1,"%02x",client[32]);
+                //fprintf(file1,"%02x", client[32]);
             }
             printf("\n");
             //exit(1);
@@ -85,12 +91,14 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
             printf("length: %4d \n",data_buffer[i+8]);
             //fprintf(file,"\nlength: %4d", data_buffer[i+8]);              //to print length in file
             printf("Random(32-bytes): ");
-            fprintf(file,"\nServer_Random ");
+            fprintf(file, "\nServer_Random ");
+            fprintf(file1, "\nServer_Random ");
             for(s=11;s<43;s++){
                 //printf("%02x ",data_buffer[i+s]);
                 server[32]=data_buffer[i+s];
                 printf("%02x", server[32]);
                 fprintf(file,"%02x", server[32]);
+                 fprintf(file1,"%02x", server[32]);
             }
             printf("\n");
         }
@@ -120,10 +128,12 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
             printf("length: %d \n",data_buffer[i+4]);
             printf("Encrypted Handshake Message: ");
             if (data_buffer[i+print])fprintf(file, "\n[CLIENT SIDE]-->IV ");
+            if (data_buffer[i+print])fprintf(file1, "\n[CLIENT SIDE]-->IV ");
 
             for(print;print<length; print++){   //length is right other bug forms
                 printf("%02x ",data_buffer[i+print]);
                 fprintf(file,"%02x", data_buffer[i+print] );
+                fprintf(file1,"%02x", data_buffer[i+print] );
                 //                random[32]=data_buffer[i+print];
                 //                printf("%02x ", random[32]);
                 //                fprintf(file,"Client_Random %02x ", random[32]);
@@ -173,9 +183,11 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
             printf("length: %d \n",data_buffer[i+10]);
             printf("Encrypted Handshake Message: ");
             if(data_buffer[i+print])fprintf(file, "\n[SERVER SIDE]-->IV ");
+            if(data_buffer[i+print])fprintf(file1, "\n[SERVER SIDE]-->IV ");
             for(print;print<length; print++){
                 printf("%02x ",data_buffer[i+print]);
                 fprintf(file,"%02x", data_buffer[i+print] );
+                fprintf(file1,"%02x", data_buffer[i+print] );
             }
 
             printf("\n");
@@ -208,18 +220,23 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
        * i=from 5... start application data
        *
        */
+
         if(data_buffer[i]==0x17 && data_buffer[i+1]== 0x03  && (data_buffer[i+2]==0x01 ||data_buffer[i+2]==0x03 )){
-            printf("\nContent Type: Application Data (0x%02x)\n", data_buffer[i]);
+            int i=0, *counter =(int *)user_args;
+            printf("\nApplication Packet Count: %d\n", ++(*counter));
+            printf("Content Type: Application Data (0x%02x)\n", data_buffer[i]);
             if( data_buffer[i+2]==0x01) printf("VERSION: TLS 1.0 (0x0301) \n", data_buffer[i+2] );
             else printf("VERSION: TLS 1.2 (0x0303)\n",data_buffer[i+2] );
             printf("length: %d%d \n",data_buffer[i+3],data_buffer[i+4]);
             //fprintf(file,"\nlength: %d%d", data_buffer[i+3],data_buffer[i+4]);
             printf("Application Data: ");
-            fprintf(file,"\nApplication_Data ");
+            fprintf(file,"\nApplication_Data "); fprintf(file1,"\nApplication_Data ");
+
             for(int data =5;data<length; data++){
                 buffer[length]=data_buffer[i+data];
                 printf("%02x ",buffer[length]);
-                fprintf(file,"%02x ", buffer[length]);
+                fprintf(file,"%02x", buffer[length]); fprintf(file1,"%02x", buffer[length]);
+                //if(i=7) fprintf(file1,"%02x", buffer[length]);
                 //printf("%02x ",data_buffer[i+data]);
                 //fprintf(file,"%02x ", data_buffer[i+data]);
                 //if(data_buffer[i]==23 && data_buffer[i+1]== 0x03  && (data_buffer[i+2]==0x01 ||data_buffer[i+2]==0x03 )) break;
@@ -231,6 +248,7 @@ void tlsparser(const unsigned char *data_buffer, const unsigned int length) {
 
 
         fclose(file);
+        fclose(file1);
     }//END of FOR LOOP
 
 
