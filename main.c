@@ -103,7 +103,7 @@ void caught_packet(u_char *user_args, const struct pcap_pkthdr *cap_header, cons
 
         tlsparser(user_args, pkt_data,pkt_data_len);
         decryptcomparator();
-        decryptcomparator_server();
+        //decryptcomparator_server();
 
 //        if(flag == 0)
 //        {

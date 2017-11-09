@@ -36,13 +36,13 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
     }
 
     int ret = EXIT_FAILURE;
-    char buffer[500];
+    char buffer[2000];
     int credIndex = 0;
     struct credentials cred[CredentialSize];
 
-    for(int i =0;i<CredentialSize;i++){
-        cred[i].sApplicationDataSize = 0;
-        cred[i].flag = 0;
+    for(int s =0;s<CredentialSize;s++){
+        cred[s].sApplicationDataSize = 0;
+        cred[s].flag = 0;
 
     }
     // extracting data from credentials.txt file and storing ClientRandom & Server Random in a char* string
@@ -72,6 +72,7 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
             fseek(credentials_file, -1*count, SEEK_CUR);
             cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize] = (char*)malloc((sizeof(char)*count)+1);
             fscanf(credentials_file,"%s\n",cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
+            cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize][count+1] = '\0';
             //printf("AppData:%s\n",cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
             cred[credIndex].sApplicationDataSize++;
         }
@@ -84,22 +85,26 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
     // extracting data from credentials.txt file and storing ClientRandom & Server Random in a char* string
 //exit(1);
     int checkFlag = 0;
-    for(int i = 0; i <= credIndex; i++){
+    for(int f = 0; f <= credIndex; f++){
         rewind(log_file);
         while(fscanf(log_file,"%s\n",buffer) != EOF)
         {
-            if(!strcmp(buffer,cred[i].sClientRandom)){
+            if(!strcmp(buffer,cred[f].sClientRandom)){
                 fscanf(log_file,"%s\n",buffer);
-                strncpy(cred[i].sMaster,buffer,MasterLength);
+                strncpy(cred[f].sMaster,buffer,MasterLength);
                 checkFlag = 1;
-
+                 printf("I matched Client Random.");
                 break;
             }
         }
         if(checkFlag){
-            credIndex = i;
+            credIndex = f;
             break;
         }
+    }
+    if(!checkFlag){
+        printf("Client Random didnt match.");
+        //exit(0);
     }
         // close the both files
     fclose(credentials_file);
@@ -112,7 +117,7 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
     char* sServerRandom = cred[credIndex].sServerRandom;
     char* sMaster = cred[credIndex].sMaster;
     char* sIV = cred[credIndex].sIV;
-    //printf("sClientRandom: \n",cred[credIndex].sClientRandom);
+    printf("sClientRandom: %s\nSize: %i\n",sClientRandom,cred[credIndex].sApplicationDataSize);
 
     // Sample info in proper format
     char * master = NULL;
@@ -133,13 +138,14 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
     {
         sEncryptedData = cred[credIndex].sApplicationData[z];
          //sEncryptedData =cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize];
-        size_t encrypted_size = strlen(sEncryptedData) / 2;
+        size_t encrypted_size = (strlen(sEncryptedData) / 2);
         size_t decrypted_size = encrypted_size;
         encrypted = malloc(encrypted_size);
         decrypted = malloc(decrypted_size);
-        if( z == 2){
-            printf("Application2:%s\n",cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
-            exit(1);
+
+        if( z == 3){
+            printf("Application%i:%s\n",z+1,cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
+            //exit(1);
         }
 
 
@@ -172,7 +178,7 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
     if(from_hex(sEncryptedData, encrypted) == -1)
     {
         fprintf(stderr, "Failed from_hex sEncryptedData");
-        goto failed;
+        //goto failed;
     }
 
     if(from_hex(sIV, iv) == -1)
@@ -187,17 +193,21 @@ decryptcomparator(FILE* credentials_file,FILE* log_file )
     if(iRet == -1)
     {
         fprintf(stderr, "Problem decrypting\n");
-        goto failed;
+        //goto failed;
+    }
+    else{
+        printf("Decrypted (size=%d):\n", decrypted_size);
+        printf("==========================================================\n");
+        for(i=0; i<decrypted_size; i++)
+            printf("%c", (unsigned char)decrypted[i]);
+        printf("\n==========================================================\n");
+        for(i=0; i<decrypted_size; i++)
+            printf("%0x ", (unsigned char)decrypted[i]);
+        printf("\n==========================================================\n");
+
     }
 
-    printf("Decrypted (size=%d):\n", decrypted_size);
-    printf("==========================================================\n");
-    for(i=0; i<decrypted_size; i++)
-        printf("%c", (unsigned char)decrypted[i]);
-    printf("\n==========================================================\n");
-    for(i=0; i<decrypted_size; i++)
-        printf("%0x ", (unsigned char)decrypted[i]);
-    printf("\n==========================================================\n");
+
 }
     ret = EXIT_SUCCESS;
 

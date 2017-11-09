@@ -74,6 +74,7 @@ decryptcomparator_server(FILE* credentials_file,FILE* log_file )
             cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize] = (char*)malloc((sizeof(char)*count)+1);
             fscanf(credentials_file,"%s\n",cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
             //printf("AppData:%s\n",cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
+            cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize][count] = '\0';
             cred[credIndex].sApplicationDataSize++;
         }
         else if(!strcmp(buffer,"[CLIENT")){
@@ -138,9 +139,9 @@ decryptcomparator_server(FILE* credentials_file,FILE* log_file )
         size_t decrypted_size = encrypted_size;
         encrypted = malloc(encrypted_size);
         decrypted = malloc(decrypted_size);
-        if( z == 2){
+        if( z == 0){
             printf("Application2:%s\n",cred[credIndex].sApplicationData[cred[credIndex].sApplicationDataSize]);
-            exit(1);
+           // exit(1);
         }
 
 
@@ -173,7 +174,7 @@ decryptcomparator_server(FILE* credentials_file,FILE* log_file )
     if(from_hex(sEncryptedData, encrypted) == -1)
     {
         fprintf(stderr, "Failed from_hex sEncryptedData");
-        goto failed;
+       // goto failed;
     }
 
     if(from_hex(sIV, iv) == -1)
