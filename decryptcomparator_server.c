@@ -25,7 +25,7 @@ struct credentials{
 decryptcomparator_server(FILE* credentials_file,FILE* log_file )
 {
     size_t i;
-
+    char c;  // To store a character read from file
      // open the credentials in read-only mode
      credentials_file = fopen("/home/ssikder/qt/analyzer/branch1.0/analyzer/credentialsserver.txt","r");
     // open the log file
@@ -46,6 +46,13 @@ decryptcomparator_server(FILE* credentials_file,FILE* log_file )
         cred[i].flag = 0;
 
     }
+
+    for(c = getc(credentials_file); c!=EOF;c=getc(credentials_file)){
+        if (c == '\n') // Increment count if this character is newline
+                    c = c + 1;
+    }
+    printf("The file %s has %d lines\n ", credentials_file, c);
+
     // extracting data from credentials.txt file and storing ClientRandom & Server Random in a char* string
     while(fscanf(credentials_file,"%s\n",buffer) != EOF)
     {

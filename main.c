@@ -15,6 +15,10 @@
 #include "header.h"
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+
+
+
 
 #include "tlsparser.h"
 //#include<netinet/tcp.h>
@@ -74,7 +78,7 @@ int main(int argc, char** argv) {
     //====================================================================
 
     pcap_loop(pcap_handle, -1, caught_packet, (u_char *) &counter);
-
+     decryptcomparator();
     pcap_close(pcap_handle);
 }
 
@@ -102,6 +106,7 @@ void caught_packet(u_char *user_args, const struct pcap_pkthdr *cap_header, cons
         dump(pkt_data, pkt_data_len);
 
         tlsparser(user_args, pkt_data,pkt_data_len);
+
         decryptcomparator();
         //decryptcomparator_server();
 

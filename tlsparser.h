@@ -251,8 +251,9 @@ void tlsparser(u_char *user_args, const unsigned char *data_buffer, const unsign
 
         fclose(file);
         fclose(file1);
-    }//END of FOR LOOP
 
+    }//END of FOR LOOP
+//exit(0);
 
 
 
